@@ -1,0 +1,30 @@
+{
+  "name": "game-admin-ui-parts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "generate:share": "STATIC_SHARE=1 nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "typecheck": "nuxt typecheck"
+  },
+  "dependencies": {
+    "@iconify-json/lucide": "^1.2.150",
+    "@nuxt/ui": "^4.12.0",
+    "@vueuse/core": "^14.4.0",
+    "@vueuse/nuxt": "^14.4.0",
+    "date-fns": "^4.4.0",
+    "nuxt": "^4.6.4",
+    "tailwindcss": "^4.3.3",
+    "vue": "^3.5.44",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^6.0.3",
+    "vue-tsc": "^3.3.14"
+  }
+}
