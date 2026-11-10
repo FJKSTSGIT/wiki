@@ -8,6 +8,7 @@
  */
 import type { EnvKey } from '~/utils/environments'
 import { PATTERN_PRESETS } from '~/utils/patterns'
+import type { ScreenChoice } from '~/utils/screens'
 
 export type CandidateStatus = 'draft' | 'review' | 'adopted' | 'rejected'
 export type CandidateLayout = 'sidebar' | 'compact' | 'topnav'
@@ -27,6 +28,8 @@ export interface Candidate {
   order: number
   patterns: string[]
   settings: CandidateSettings
+  /** 画面ごとのレイアウト・表示項目の選択（パターン ID → 選択） */
+  screens?: Record<string, ScreenChoice>
   updatedAt: number
   updatedBy: string | null
 }
@@ -66,6 +69,7 @@ export function newCandidateBody(name: string, patterns: string[], order: number
     order,
     patterns: [...patterns],
     settings: { productName: 'Game Admin', color: 'indigo', env: 'production', layout: 'sidebar', ...base?.settings },
+    screens: base?.screens ? JSON.parse(JSON.stringify(base.screens)) : {},
     updatedAt: Date.now(),
     updatedBy: null
   }

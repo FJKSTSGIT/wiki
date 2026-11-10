@@ -2,6 +2,7 @@
 import { CANDIDATE_COLORS, CANDIDATE_LAYOUTS, CANDIDATE_STATUS, type Candidate, type CandidateStatus } from '~/composables/useBuilder'
 import { ENVIRONMENTS, ENV_KEYS } from '~/utils/environments'
 import { ALL_PATTERNS, IMPORTANCE, PATTERN_CATEGORIES, PATTERN_PRESETS } from '~/utils/patterns'
+import { SCREEN_TYPES, resolveScreen, screenSpecOf, type ScreenChoice } from '~/utils/screens'
 
 useHead({ title: '組み立てツール' })
 
@@ -15,6 +16,24 @@ const current = computed<Candidate | undefined>(() =>
 watch(() => current.value?.id, id => setPresence(id), { immediate: true })
 
 const view = ref<'edit' | 'compare' | 'present'>('edit')
+/** 編集中にプレビューを広く表示する（左の設定欄を隠す） */
+const wide = ref(false)
+
+/* ---------- 表示中の画面と、その中身の選択 ---------- */
+const screenId = ref<string>()
+const screenPattern = computed(() => ALL_PATTERNS.find(p => p.id === screenId.value && current.value?.patterns.includes(p.id)))
+const screenSpec = computed(() => screenPattern.value ? screenSpecOf(screenPattern.value.id, screenPattern.value.name) : undefined)
+function setScreen(choice: ScreenChoice) {
+  if (!current.value || !screenPattern.value) return
+  update({ screens: { [screenPattern.value.id]: choice } }, 300)
+}
+/** 案の画面ごとの選択を、人が読める文にする */
+function screenSummary(c: Candidate, patternId: string) {
+  const p = ALL_PATTERNS.find(x => x.id === patternId)!
+  const spec = screenSpecOf(p.id, p.name)
+  const r = resolveScreen(spec, c.screens?.[p.id])
+  return { layout: SCREEN_TYPES[spec.type].layouts.find(l => l.value === r.layout)?.label ?? '', blocks: r.blocks.map(b => b.label), customized: !!c.screens?.[p.id] }
+}
 const viewTabs = [
   { label: '編集', value: 'edit', icon: 'i-lucide-pencil-ruler' },
   { label: '比較', value: 'compare', icon: 'i-lucide-columns-3' },
@@ -53,7 +72,7 @@ const createMenu = computed(() => [[
   ? [{
       label: `「${current.value.name}」を複製`,
       icon: 'i-lucide-copy',
-      onSelect: () => create(`${current.value!.name} のコピー`, current.value!.patterns, { memo: current.value!.memo, settings: { ...current.value!.settings } })
+      onSelect: () => create(`${current.value!.name} のコピー`, current.value!.patterns, { memo: current.value!.memo, settings: { ...current.value!.settings }, screens: current.value!.screens })
     }]
   : []])
 
@@ -116,7 +135,12 @@ const summaryText = computed(() => state.candidates.map(c => [
   `レイアウト：${CANDIDATE_LAYOUTS.find(l => l.value === c.settings.layout)?.label} / テーマ色：${c.settings.color}`,
   ...PATTERN_CATEGORIES.flatMap((cat) => {
     const items = cat.patterns.filter(p => c.patterns.includes(p.id))
-    return items.length ? [`## ${cat.label}`, ...items.map(p => `- ${p.name}`)] : []
+    return items.length
+      ? [`## ${cat.label}`, ...items.map((p) => {
+          const sc = screenSummary(c, p.id)
+          return sc.customized ? `- ${p.name}（${sc.layout}：${sc.blocks.join('・')}）` : `- ${p.name}`
+        })]
+      : []
   }),
   ''
 ].filter(Boolean).join('\n')).join('\n\n'))
@@ -208,8 +232,8 @@ async function copySummary() {
       <UTabs v-model="view" :items="viewTabs" :content="false" variant="link" class="-mb-2" />
 
       <!-- 編集 -->
-      <div v-if="view === 'edit'" class="grid gap-5 lg:grid-cols-[22rem_1fr]">
-        <div class="flex min-w-0 flex-col gap-4">
+      <div v-if="view === 'edit'" class="grid gap-5" :class="wide ? '' : 'lg:grid-cols-[22rem_1fr]'">
+        <div v-show="!wide" class="flex min-w-0 flex-col gap-4">
           <UCard :ui="{ body: 'p-4 sm:p-4 space-y-4' }">
             <UFormField label="案の名前">
               <UInput :model-value="current.name" :disabled="!writable" class="w-full" @update:model-value="(v: string) => update({ name: v })" />
@@ -326,7 +350,15 @@ async function copySummary() {
             </p>
             <span class="text-xs text-muted">メニューを押すと画面イメージが切り替わります</span>
             <UButton
-              class="ms-auto"
+              class="ms-auto hidden lg:inline-flex"
+              :label="wide ? '設定欄を表示' : 'プレビューを広げる'"
+              :icon="wide ? 'i-lucide-panel-left-open' : 'i-lucide-maximize-2'"
+              size="sm"
+              color="neutral"
+              variant="ghost"
+              @click="wide = !wide"
+            />
+            <UButton
               :label="myVote === current.id ? '推し案に投票済み' : 'この案に投票'"
               :icon="'i-lucide-thumbs-up'"
               size="sm"
@@ -336,7 +368,15 @@ async function copySummary() {
               @click="toggleVote(current.id)"
             />
           </div>
-          <BuilderPreview :key="current.id" :candidate="current" />
+          <ScreenEditor
+            v-if="screenSpec && screenPattern"
+            :spec="screenSpec"
+            :choice="current.screens?.[screenPattern.id]"
+            :name="screenPattern.name"
+            :disabled="!writable"
+            @change="setScreen"
+          />
+          <BuilderPreview :key="current.id" v-model:screen="screenId" :candidate="current" height="44rem" />
         </div>
       </div>
 
@@ -388,6 +428,9 @@ async function copySummary() {
                     :class="c.patterns.includes(p.id) ? 'size-4 text-primary' : 'size-4 text-dimmed'"
                     :aria-label="c.patterns.includes(p.id) ? 'あり' : 'なし'"
                   />
+                  <UTooltip v-if="c.patterns.includes(p.id) && screenSummary(c, p.id).customized" :text="screenSummary(c, p.id).blocks.join('・')">
+                    <span class="block text-[10px] text-muted">{{ screenSummary(c, p.id).layout }}・{{ screenSummary(c, p.id).blocks.length }} 項目</span>
+                  </UTooltip>
                 </td>
               </tr>
             </template>
@@ -436,7 +479,7 @@ async function copySummary() {
             />
           </div>
         </div>
-        <BuilderPreview :key="`p-${current.id}`" :candidate="current" height="40rem" />
+        <BuilderPreview :key="`p-${current.id}`" v-model:screen="screenId" :candidate="current" height="44rem" />
       </div>
     </template>
 
