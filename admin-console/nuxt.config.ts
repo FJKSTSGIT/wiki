@@ -7,7 +7,13 @@ export default defineNuxtConfig({
 
   devtools: { enabled: false },
 
+  // STATIC_SHARE=1 のときは任意のパス配下・静的ホスティングで動くよう相対パス + ハッシュルーティングで出力する
+  ...(process.env.STATIC_SHARE && {
+    router: { options: { hashMode: true } }
+  }),
+
   app: {
+    ...(process.env.STATIC_SHARE && { cdnURL: './', buildAssetsDir: '/assets/' }),
     head: {
       htmlAttrs: { lang: 'ja' },
       title: 'Game Admin Console',
