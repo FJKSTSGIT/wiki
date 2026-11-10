@@ -103,7 +103,29 @@ const visibleGroups = computed(() => props.groups
           {{ g.label }}
         </p>
         <USeparator v-else-if="g.label && collapsed && i > 0" class="mb-2" />
-        <UNavigationMenu :items="g.items" orientation="vertical" :collapsed="collapsed" tooltip popover />
+        <!-- 折りたたみ時の子メニューは「押して開く」（スマホなどホバーできない端末でも使えるように） -->
+        <UNavigationMenu :items="g.items" orientation="vertical" :collapsed="collapsed" tooltip :popover="{ mode: 'click' }">
+          <template #item-content="{ item, close }">
+            <ul class="flex min-w-48 flex-col gap-0.5 p-1.5">
+              <li class="px-2 py-1 text-xs font-medium text-muted">
+                {{ item.label }}
+              </li>
+              <li v-for="child in item.children" :key="child.label">
+                <UButton
+                  :label="child.label"
+                  :to="child.to"
+                  :icon="child.icon"
+                  :color="child.active ? 'primary' : 'neutral'"
+                  :variant="child.active ? 'soft' : 'ghost'"
+                  size="sm"
+                  block
+                  class="justify-start"
+                  @click="(e: MouseEvent) => { child.onSelect?.(e); close?.() }"
+                />
+              </li>
+            </ul>
+          </template>
+        </UNavigationMenu>
       </div>
       <p v-if="!visibleGroups.length" class="px-2.5 text-xs text-muted">
         表示できるメニューがありません
