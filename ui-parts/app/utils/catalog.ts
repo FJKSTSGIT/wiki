@@ -6,7 +6,8 @@ export const CATALOG_MENU: SideMenuGroup[] = [
     label: '部品',
     items: [
       { label: 'はじめに', icon: 'i-lucide-house', to: '/' },
-      { label: 'パターン一覧', icon: 'i-lucide-list-checks', to: '/patterns', badge: 'NEW' },
+      { label: '組み立てツール', icon: 'i-lucide-hammer', to: '/builder', badge: 'NEW' },
+      { label: 'パターン一覧', icon: 'i-lucide-list-checks', to: '/patterns' },
       { label: 'サイドメニュー', icon: 'i-lucide-panel-left', to: '/parts/side-menu' },
       { label: '固定ヘッダー（環境表示）', icon: 'i-lucide-panel-top', to: '/parts/env-header' },
       { label: '権限による表示切替', icon: 'i-lucide-shield-check', to: '/parts/access' },

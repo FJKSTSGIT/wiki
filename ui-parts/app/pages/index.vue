@@ -2,6 +2,7 @@
 useHead({ title: 'はじめに' })
 
 const parts = [
+  { title: '組み立てツール', to: '/builder', icon: 'i-lucide-hammer', description: '機能を選んで候補案を複数作り、比較・発表・投票。共有するとリアルタイムで一緒に編集できる' },
   { title: 'パターン一覧（選択）', to: '/patterns', icon: 'i-lucide-list-checks', description: 'ゲーム管理ツールでよく使う画面・機能を一覧から選んで、構成を決める' },
   { title: 'サイドメニュー', to: '/parts/side-menu', icon: 'i-lucide-panel-left', description: '折りたたみ・スマホ対応・権限による項目の出し分け' },
   { title: '固定ヘッダー（環境表示）', to: '/parts/env-header', icon: 'i-lucide-panel-top', description: '本番・ステージングなど接続先を色で常に表示' },

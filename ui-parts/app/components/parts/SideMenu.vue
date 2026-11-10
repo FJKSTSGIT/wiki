@@ -17,12 +17,18 @@ export interface SideMenuItem {
   badge?: string | number
   permission?: Permission
   children?: SideMenuItem[]
+  /** クリック時の処理（to の代わりに使える） */
+  onSelect?: () => void
+  /** 選択中として表示する */
+  active?: boolean
 }
 
 export interface SideMenuGroup {
   label?: string
   items: SideMenuItem[]
 }
+
+defineOptions({ inheritAttrs: false })
 
 const props = withDefaults(defineProps<{
   groups: SideMenuGroup[]
@@ -63,8 +69,12 @@ function toNav(items: SideMenuItem[]): NavigationMenuItem[] {
     to: i.to,
     badge: i.badge !== undefined ? String(i.badge) : undefined,
     defaultOpen: true,
+    active: i.active,
     children: i.children ? toNav(i.children) : undefined,
-    onSelect: () => { open.value = false }
+    onSelect: () => {
+      i.onSelect?.()
+      open.value = false
+    }
   }))
 }
 
@@ -76,6 +86,7 @@ const visibleGroups = computed(() => props.groups
 <template>
   <!-- PC -->
   <aside
+    v-bind="$attrs"
     class="flex-col border-e border-default bg-elevated/25 transition-[width] duration-200"
     :class="[
       collapsed ? 'w-16' : contained ? 'w-full max-w-72' : 'w-60',

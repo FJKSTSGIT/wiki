@@ -75,12 +75,14 @@ const envItems = computed(() => [ENV_KEYS.map(k => ({
 
     <div
       v-if="showCaution && meta.caution && !cautionClosed"
-      class="flex items-center gap-2 border-b border-error/30 bg-error/10 px-4 py-1.5 text-xs text-error sm:px-6"
+      class="bg-default"
       role="status"
     >
+    <div class="flex items-center gap-2 border-b border-error/30 bg-error/10 px-4 py-1.5 text-xs text-error sm:px-6">
       <UIcon name="i-lucide-triangle-alert" class="size-4 shrink-0" />
       <span class="min-w-0 flex-1">{{ meta.description }}</span>
       <UButton icon="i-lucide-x" size="xs" color="error" variant="link" aria-label="注意表示を閉じる" @click="cautionClosed = true" />
+    </div>
     </div>
   </header>
 </template>
