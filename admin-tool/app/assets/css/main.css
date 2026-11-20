@@ -1,0 +1,57 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme {
+  --font-sans: "Inter", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* ───────── 環境カラー（線だけに使う） ───────── */
+:root,
+[data-env="local"] { --env: var(--color-zinc-400); }
+[data-env="dev"]   { --env: var(--color-blue-500); }
+[data-env="stg"]   { --env: var(--color-yellow-400); }
+[data-env="prod"]  { --env: var(--color-red-500); }
+
+:root {
+  --env-soft: color-mix(in oklab, var(--env) 14%, transparent);
+  --env-faint: color-mix(in oklab, var(--env) 7%, transparent);
+  --env-glow: color-mix(in oklab, var(--env) 45%, transparent);
+}
+
+/* ボディ色は全環境共通 */
+.dark { --ui-bg: #0d0f12; --ui-bg-muted: #12151a; --ui-bg-elevated: #161a20; --ui-bg-accented: #1d222a; --ui-border: #23282f; }
+body { background: var(--ui-bg); }
+
+/* タイトルバー：下線 + 上の極細ライン */
+.env-titlebar {
+  border-bottom: 1px solid var(--env);
+  box-shadow: 0 1px 12px -4px var(--env-glow);
+  background:
+    linear-gradient(90deg, var(--env-faint), transparent 40%),
+    var(--ui-bg);
+}
+.env-titlebar::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--env), transparent 70%);
+}
+
+/* サイドバー：右の縦線 */
+.env-sidebar {
+  border-right: 1px solid var(--env) !important;
+  box-shadow: 1px 0 12px -6px var(--env-glow);
+}
+
+/* マスコットのふわふわ */
+@keyframes mascot-bob   { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-3px) } }
+@keyframes mascot-wobble{ 0%,100% { transform: rotate(-3deg) } 50% { transform: rotate(3deg) } }
+@keyframes mascot-float { 0%,100% { opacity: .9 } 50% { opacity: .55 } }
+.mascot-bob    { animation: mascot-bob 2.4s ease-in-out infinite; }
+.mascot-wobble { animation: mascot-wobble 3s ease-in-out infinite; transform-origin: 50% 90%; }
+.mascot-float  { animation: mascot-float 4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .mascot-bob, .mascot-wobble, .mascot-float { animation: none; }
+}
